@@ -7,12 +7,14 @@ param (
     [switch]$security, #toggles security logs
     [switch]$all #toggles all logs
 )
-Get-EventLog -LogName Application -After $start -Before $end;
-Get-EventLog -LogName HardwareEvents -After $start -Before $end;
-Get-EventLog -LogName System -After $start -Before $end;
+$events = Get-EventLog -LogName Application -After $start -Before $end;
+$events += Get-EventLog -LogName HardwareEvents -After $start -Before $end;
+$events += Get-EventLog -LogName System -After $start -Before $end;
 if($security -or $all){ #only executes if security or all logs are toggled on
-    Get-EventLog -LogName Security -After $start -Before $end;
+    $events += Get-EventLog -LogName Security -After $start -Before $end;
 }
 if($powershell -or $all){ #only executes if powershell or all logs are toggled on
-    Get-EventLog -LogName 'Windows PowerShell' -After $start -Before $end;
+    $events += Get-EventLog -LogName 'Windows PowerShell' -After $start -Before $end;
 }
+#Outputs Sorted Array from Oldest Entries to Newest
+$events | Sort-Object -Property TimeGenerated
