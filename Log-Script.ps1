@@ -1,7 +1,7 @@
 #This is a brief Powershell script that pulls logs between two timestamps
 #declare variables
 param (
-    [string]$start = "7/26/2026 04:10:00", #earliest timestamp that will be included in output
+    [string]$start = ((Get-Date).AddMinutes(-30)), #earliest timestamp that will be included in output
     [string]$end = (Get-Date), #last timestamp that will be included in output
     [switch]$powershell, #toggles the output of powershell logs
     [switch]$security, #toggles security logs
