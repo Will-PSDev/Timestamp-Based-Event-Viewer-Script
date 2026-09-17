@@ -1,13 +1,21 @@
 #This is a brief Powershell script that pulls logs between two timestamps
 #declare variables
 param (
-    [string]$start = ((Get-Date).AddMinutes(-30)), #earliest timestamp that will be included in output
-    [string]$end = (Get-Date), #last timestamp that will be included in output
+    [DateTime]$end = (Get-Date), #last timestamp that will be included in output
+    [DateTime]$start = ($end.AddMinutes(-30)), #earliest timestamp that will be included in output,defaults to 30 minutes prior to $end
     [switch]$powershell, #toggles the output of powershell logs
     [switch]$security, #toggles security logs
     [switch]$all, #toggles all logs
-    [string]$message #dual use, if this parameter is refrenced triggers if condition where events are matched to the string assigned to message
+    [string]$message, #dual use, if this parameter is refrenced triggers if condition where events are matched to the string assigned to message
+    [switch]$hour #triggers an if statement where the value of $start is set to 1 hour before the value of $end
 )
+
+
+#if hour is called, sets $end to 1 hour prior to $start
+if($hour){
+    $start = (($end).AddHours(-1));
+}
+
 #checks if search term exists, if so it runs the search with the search term
 if ($message){
     $events = Get-EventLog -LogName Application -After $start -Before $end -Message $message;
