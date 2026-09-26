@@ -7,13 +7,18 @@ param (
     [switch]$security, #toggles security logs
     [switch]$all, #toggles all logs
     [string]$message, #dual use, if this parameter is refrenced triggers if condition where events are matched to the string assigned to message
-    [switch]$hour #triggers an if statement where the value of $start is set to 1 hour before the value of $end
+    [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
+    [switch]$day #triggers an if statement where the value of $start is set to 1 day before the value of $end
 )
-
 
 #if hour is called, sets $end to 1 hour prior to $start
 if($hour){
     $start = (($end).AddHours(-1));
+}
+
+#if day is called, sets $end to 1 day prior to $start
+if($day){
+    $start = (($end).AddDays(-1));
 }
 
 #checks if search term exists, if so it runs the search with the search term
