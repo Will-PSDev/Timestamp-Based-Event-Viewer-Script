@@ -1,7 +1,7 @@
 #This is a brief Powershell script that pulls logs between two timestamps
 #declare variables
 param (
-    [DateTime]$end = (Get-Date), #last timestamp that will be included in output
+    [DateTime]$end = (Get-Date), #last timestamp that will be included in output, defaults to current time
     [DateTime]$start = ($end.AddMinutes(-30)), #earliest timestamp that will be included in output,defaults to 30 minutes prior to $end
     [switch]$powershell, #toggles the output of powershell logs
     [switch]$security, #toggles security logs
@@ -23,26 +23,49 @@ if($day){
 
 #checks if search term exists, if so it runs the search with the search term
 if ($message){
-    $events = Get-EventLog -LogName Application -After $start -Before $end -Message $message;
-    $events += Get-EventLog -LogName HardwareEvents -After $start -Before $end -Message $message;
-    $events += Get-EventLog -LogName System -After $start -Before $end -Message $message;
+    $events = Get-WinEvent -FilterHashtable @{ 
+        LogName =  'Application', 'HardwareEvents', 'System'
+        StartTime =  $start 
+        EndTime =  $end 
+    } | Where-Object { $_.Message -like  $message};
     if($security -or $all){ #only executes if security or all logs are toggled on
-        $events += Get-EventLog -LogName Security -After $start -Before $end -Message $message;
+        $events += Get-WinEvent -FilterHashtable @{ 
+            LogName =  'Security' 
+            StartTime =  $start 
+            EndTime =  $end 
+        } | Where-Object { $_.Message -like  $message};
     }
     if($powershell -or $all){ #only executes if powershell or all logs are toggled on
-        $events += Get-EventLog -LogName 'Windows PowerShell' -After $start -Before $end -Message $message;
+        $events += Get-WinEvent -FilterHashtable @{ 
+            LogName =  'Windows PowerShell' 
+            StartTime =  $start 
+            EndTime =  $end 
+        } | Where-Object { $_.Message -like  $message};
     }
 }
+
 #if search term value doesn't exist simply compares timestamps
 else {
-    $events = Get-EventLog -LogName Application -After $start -Before $end;
-    $events += Get-EventLog -LogName HardwareEvents -After $start -Before $end;
-    $events += Get-EventLog -LogName System -After $start -Before $end;
+    $events = Get-WinEvent -FilterHashtable @{ 
+        LogName =  'Application', 'HardwareEvents', 'System'
+        StartTime =  $start 
+        EndTime =  $end
+    };
     if($security -or $all){ #only executes if security or all logs are toggled on
-        $events += Get-EventLog -LogName Security -After $start -Before $end;
+        $events += Get-WinEvent -FilterHashtable @{ 
+            LogName =  'Security' 
+            StartTime =  $start 
+            EndTime =  $end
+        };
     }
     if($powershell -or $all){ #only executes if powershell or all logs are toggled on
-        $events += Get-EventLog -LogName 'Windows PowerShell' -After $start -Before $end;
+        $events += Get-WinEvent -FilterHashtable @{ 
+            LogName =  'Windows PowerShell' 
+            StartTime =  $start 
+            EndTime =  $end
+        };
     }
 }
-$Events | Sort-Object -Property TimeGenerated
+
+$Events | Sort-Object -Property TimeCreated | Format-Table -Property TimeCreated, Id, LevelDisplayName, ProviderName, Message -AutoSize;
+
