@@ -21,26 +21,43 @@ if($day){
     $start = (($end).AddDays(-1));
 }
 
+#function that handles complex event filtering for new conditions
+function New-EventFilter {
+    param(
+        [string]$message
+    )
+    {
+        if ($message -and $_.Message -notlike "*$message*") {
+            return $false
+        }
+
+        return $true
+    }.GetNewClosure()
+}
+
 #checks if search term exists, if so it runs the search with the search term
 if ($message){
+    #creates $filter object
+    $filter = New-EventFilter -message $message
+
     $events = Get-WinEvent -FilterHashtable @{ 
         LogName =  'Application', 'HardwareEvents', 'System'
         StartTime =  $start 
         EndTime =  $end 
-    } | Where-Object { $_.Message -like  $message};
+    } | Where-Object $filter
     if($security -or $all){ #only executes if security or all logs are toggled on
         $events += Get-WinEvent -FilterHashtable @{ 
             LogName =  'Security' 
             StartTime =  $start 
             EndTime =  $end 
-        } | Where-Object { $_.Message -like  $message};
+        } | Where-Object $filter
     }
     if($powershell -or $all){ #only executes if powershell or all logs are toggled on
         $events += Get-WinEvent -FilterHashtable @{ 
             LogName =  'Windows PowerShell' 
             StartTime =  $start 
             EndTime =  $end 
-        } | Where-Object { $_.Message -like  $message};
+        } | Where-Object $filter
     }
 }
 
