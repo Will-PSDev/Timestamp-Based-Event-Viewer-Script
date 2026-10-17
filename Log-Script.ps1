@@ -11,6 +11,26 @@ param (
     [switch]$day #triggers an if statement where the value of $start is set to 1 day before the value of $end
 )
 
+#function that handles complex event filtering for new conditions
+function New-EventFilter {
+    param(
+        [string]$message,
+        [int[]]$excludeID
+    )
+    {
+        #if logic to find specific message
+        if ($message -and $_.Message -notlike "*$message*") {
+            return $false
+        }
+        #if logic to exclude certain IDs
+        if ($excludeID -and $_.Id -in $excludeID){
+            return $false
+        }
+
+        return $true
+    }.GetNewClosure()
+}
+
 #if hour is called, sets $end to 1 hour prior to $start
 if($hour){
     $start = (($end).AddHours(-1));
@@ -21,24 +41,19 @@ if($day){
     $start = (($end).AddDays(-1));
 }
 
-#function that handles complex event filtering for new conditions
-function New-EventFilter {
-    param(
-        [string]$message
-    )
-    {
-        if ($message -and $_.Message -notlike "*$message*") {
-            return $false
-        }
-
-        return $true
-    }.GetNewClosure()
-}
-
-#checks if search term exists, if so it runs the search with the search term
-if ($message){
-    #creates $filter object
-    $filter = New-EventFilter -message $message
+#checks if any restrictive search attributes exits and creates a custom filter before running the search query
+if ($message -or $excludeCommonIDs){
+    
+    #If Logic to build what conditions may exist
+    if($message -and $excludeCommonIDs){
+        $filter = New-EventFilter -message $message -excludeID $excludeID;
+    }
+    elseif($message -and -not $excludeCommonIDs){
+        $filter = New-EventFilter -message $message;
+    }
+    elseif($excludeCommonIDs -and -not $message){
+        $filter = New-EventFilter -excludeID $excludeID;
+    }
 
     $events = Get-WinEvent -FilterHashtable @{ 
         LogName =  'Application', 'HardwareEvents', 'System'
