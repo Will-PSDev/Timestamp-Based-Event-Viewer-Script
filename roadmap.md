@@ -11,10 +11,13 @@
 
 ## Short-Term
 - [ ] Better structuring to reduce unnecessary functions from being read by the system when not needed
-- [ ] Output logs to file
+- [X] Output logs to file (Completed 10/26/26)
 - [ ] Sort by newest to oldest
 - [ ] Exclude Informational logs
 - [ ] Extra time parameters such as -week, -halfday, -6hours
+- [ ] Functionality to output to terminal and log file
+- [ ] Functionality to detect if log file already exists and to prompt to appened or overwrite
+
 ## Medium-Term
 - [ ] Help Parameter
 - [ ] Script can pull from custom lognames
@@ -26,3 +29,6 @@
 ## Long-Term / Future Ideas
 - [ ] Interactive Version
 - [ ] Pull logs from certain timeframes on certain days of the week
+
+## Under-Consideration
+- [ ] Prefab log file paths
