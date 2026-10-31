@@ -8,7 +8,9 @@ param (
     [switch]$all, #toggles all logs
     [string]$message, #dual use, if this parameter is refrenced triggers if condition where events are matched to the string assigned to message
     [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
-    [switch]$day #triggers an if statement where the value of $start is set to 1 day before the value of $end
+    [switch]$day, #triggers an if statement where the value of $start is set to 1 day before the value of $end
+    [switch]$excludeCommonIDs, #excludes a list of common events that quite often appear
+    [string]$filepath #dual use, if parameter is refrenced triggers logs to be dumped to a file at the specified path
 )
 
 #function that handles complex event filtering for new conditions
@@ -97,6 +99,14 @@ else {
             EndTime =  $end
         };
     }
+}
+
+$logOutput = $Events | Sort-Object -Property TimeCreated | Format-Table -Property TimeCreated, Id, RecordID, LevelDisplayName, ProviderName, Message, -AutoSize;
+if($filepath){
+    $logOutput | Out-File $filepath -append;
+}
+else{
+    $logOutput
 }
 
 $Events | Sort-Object -Property TimeCreated | Format-Table -Property TimeCreated, Id, LevelDisplayName, ProviderName, Message -AutoSize;
