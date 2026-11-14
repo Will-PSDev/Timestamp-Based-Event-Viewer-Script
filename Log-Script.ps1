@@ -10,9 +10,9 @@ param (
     [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
     [switch]$day, #triggers an if statement where the value of $start is set to 1 day before the value of $end
     [switch]$excludeCommonIDs, #excludes a list of common events that quite often appear
-    [string]$filepath #dual use, if parameter is refrenced triggers logs to be dumped to a file at the specified path
+    [string]$filepath, #dual use, if parameter is refrenced triggers logs to be dumped to a file at the specified path
+    [switch]$excludeInformation #switch to exclude all informational logs
 )
-
 #function that handles complex event filtering for new conditions
 function New-EventFilter {
     param(
@@ -26,6 +26,9 @@ function New-EventFilter {
         }
         #if logic to exclude certain IDs
         if ($excludeID -and $_.Id -in $excludeID){
+            return $false
+        }
+        if ($ExcludeLevel -and $_.LevelDisplayName -in $ExcludeLevel) {
             return $false
         }
 
@@ -47,14 +50,26 @@ if($day){
 if ($message -or $excludeCommonIDs){
     
     #If Logic to build what conditions may exist
-    if($message -and $excludeCommonIDs){
+    if($message -and $excludeCommonIDs -and $excludeInformation  -or $excludeInformation){
+        $filter = New-EventFilter -message $message -excludeID $excludeID -ExcludeLevel "Information";
+    }
+    elseif($message -and $excludeCommonIDs){
         $filter = New-EventFilter -message $message -excludeID $excludeID;
+    }
+    elseif($message -and $excludeInformation){
+        $filter = New-EventFilter -message $message -ExcludeLevel "Information";
+    }
+    elseif($excludeCommonIDs -and $excludeInformation){
+        $filter = New-EventFilter -excludeID $excludeID -ExcludeLevel "Information";
     }
     elseif($message -and -not $excludeCommonIDs){
         $filter = New-EventFilter -message $message;
     }
     elseif($excludeCommonIDs -and -not $message){
         $filter = New-EventFilter -excludeID $excludeID;
+    }
+    elseif($excludeInformation){
+        $filter = New-EventFilter -ExcludeLevel "Information";
     }
 
     $events = Get-WinEvent -FilterHashtable @{ 
