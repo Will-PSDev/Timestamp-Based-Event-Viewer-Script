@@ -13,10 +13,11 @@
 - [ ] Better structuring to reduce unnecessary functions from being read by the system when not needed
 - [X] Output logs to file (Completed 10/26/26)
 - [ ] Sort by newest to oldest
-- [ ] Exclude Informational logs
+- [X] Exclude Informational logs (Completed 11/14/26)
 - [ ] Extra time parameters such as -week, -halfday, -6hours
 - [ ] Functionality to output to terminal and log file
 - [ ] Functionality to detect if log file already exists and to prompt to appened or overwrite
+- [ ] Logic Rewrite to better handle multiple filter parameters
 
 ## Medium-Term
 - [ ] Help Parameter
@@ -32,3 +33,4 @@
 
 ## Under-Consideration
 - [ ] Prefab log file paths
+- [ ] Logic rewrite such that logs are always ran through filter
