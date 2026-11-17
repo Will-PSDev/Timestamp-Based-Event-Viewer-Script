@@ -17,7 +17,7 @@
 - [ ] Extra time parameters such as -week, -halfday, -6hours
 - [ ] Functionality to output to terminal and log file
 - [ ] Functionality to detect if log file already exists and to prompt to appened or overwrite
-- [ ] Logic Rewrite to better handle multiple filter parameters
+- [X] Logic Rewrite to better handle multiple filter parameters
 
 ## Medium-Term
 - [ ] Help Parameter
@@ -25,7 +25,7 @@
 - [ ] Error Catching
 - [ ] Append to file (dependant on implimentation of outputting logs)
 - [ ] Specify ID to exclude
-- [ ] Improved logic for how the code handles the -day and -hour parameters
+- [X] Improved logic for how the code handles the -day and -hour parameters
 
 ## Long-Term / Future Ideas
 - [ ] Interactive Version
