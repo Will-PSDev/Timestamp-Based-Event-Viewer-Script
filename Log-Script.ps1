@@ -1,14 +1,21 @@
 #This is a brief Powershell script that pulls logs between two timestamps
 #declare variables
 param (
+    #Time Parameters
     [DateTime]$end = (Get-Date), #last timestamp that will be included in output, defaults to current time
     [DateTime]$start = ($end.AddMinutes(-30)), #earliest timestamp that will be included in output,defaults to 30 minutes prior to $end
+    
+    #Intervals
+    [Parameter(ParameterSetName = 'hour')]
+    [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
+    [Parameter(ParameterSetName = 'day')]
+    [switch]$day, #triggers an if statement where the value of $start is set to 1 day before the value of $end
+    
+    #Other Parameters
     [switch]$powershell, #toggles the output of powershell logs
     [switch]$security, #toggles security logs
     [switch]$all, #toggles all logs
     [string]$message, #dual use, if this parameter is refrenced triggers if condition where events are matched to the string assigned to message
-    [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
-    [switch]$day, #triggers an if statement where the value of $start is set to 1 day before the value of $end
     [switch]$excludeCommonIDs, #excludes a list of common events that quite often appear
     [string]$filepath, #dual use, if parameter is refrenced triggers logs to be dumped to a file at the specified path
     [switch]$excludeInformation #switch to exclude all informational logs
@@ -17,7 +24,8 @@ param (
 function New-EventFilter {
     param(
         [string]$message,
-        [int[]]$excludeID
+        [int[]]$excludeID,
+        [string[]]$ExcludeLevel
     )
     {
         #if logic to find specific message
@@ -36,40 +44,33 @@ function New-EventFilter {
     }.GetNewClosure()
 }
 
-#if hour is called, sets $end to 1 hour prior to $start
-if($hour){
-    $start = (($end).AddHours(-1));
-}
-
-#if day is called, sets $end to 1 day prior to $start
-if($day){
-    $start = (($end).AddDays(-1));
+#Logic to determine what time interval to use if a time interval parameter is called
+switch ($PSCmdlet.ParameterSetName){
+    'hour' {$start = (($end).AddHours(-1));} #if hour is called, sets $start to 1 hour prior to $end
+    'day' {$start = (($end).AddDays(-1));} #if day is called, sets $start to 1 day prior to $end
 }
 
 #checks if any restrictive search attributes exits and creates a custom filter before running the search query
 if ($message -or $excludeCommonIDs){
     
     #If Logic to build what conditions may exist
-    if($message -and $excludeCommonIDs -and $excludeInformation  -or $excludeInformation){
-        $filter = New-EventFilter -message $message -excludeID $excludeID -ExcludeLevel "Information";
+    $filterParams = @{}
+
+    if ($message) {
+        $filterParams['message'] = $message
     }
-    elseif($message -and $excludeCommonIDs){
-        $filter = New-EventFilter -message $message -excludeID $excludeID;
+
+    if ($excludeCommonIDs) {
+        $filterParams['excludeID'] = $excludeID
     }
-    elseif($message -and $excludeInformation){
-        $filter = New-EventFilter -message $message -ExcludeLevel "Information";
+
+    if ($excludeInformation) {
+        $filterParams['ExcludeLevel'] = "Information"
     }
-    elseif($excludeCommonIDs -and $excludeInformation){
-        $filter = New-EventFilter -excludeID $excludeID -ExcludeLevel "Information";
-    }
-    elseif($message -and -not $excludeCommonIDs){
-        $filter = New-EventFilter -message $message;
-    }
-    elseif($excludeCommonIDs -and -not $message){
-        $filter = New-EventFilter -excludeID $excludeID;
-    }
-    elseif($excludeInformation){
-        $filter = New-EventFilter -ExcludeLevel "Information";
+
+    # Build filter if at least one condition exists
+    if ($filterParams.Count -gt 0) {
+        $filter = New-EventFilter @filterParams
     }
 
     $events = Get-WinEvent -FilterHashtable @{ 
