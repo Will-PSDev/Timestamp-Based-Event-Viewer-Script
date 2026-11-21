@@ -8,8 +8,14 @@ param (
     #Intervals
     [Parameter(ParameterSetName = 'hour')]
     [switch]$hour, #triggers an if statement where the value of $start is set to 1 hour before the value of $end
+    [Parameter(ParameterSetName = '6hours')]
+    [switch]$6hours, #triggers a switch condition where the value of $start is set to 6 hours before the value of $end
+    [Parameter(ParameterSetName = 'halfday')]
+    [switch]$halfday, #triggers a switch condition where the value of $start is set to half a day before the value of $end
     [Parameter(ParameterSetName = 'day')]
     [switch]$day, #triggers an if statement where the value of $start is set to 1 day before the value of $end
+    [Parameter(ParameterSetName = 'week')]
+    [switch]$week, #triggers a switch condition where the value of $start is set to 1 week before the value of $end
     
     #Other Parameters
     [switch]$powershell, #toggles the output of powershell logs
@@ -47,32 +53,39 @@ function New-EventFilter {
 #Logic to determine what time interval to use if a time interval parameter is called
 switch ($PSCmdlet.ParameterSetName){
     'hour' {$start = (($end).AddHours(-1));} #if hour is called, sets $start to 1 hour prior to $end
+    '6hours' {$start = (($end).AddHours(-6));} #if 6hours is called, sets $start to 6 hours prior to $end
+    'halfday' {$start = (($end).AddHours(-12));} #if halfday is called, sets $start to half a day prior to $end
     'day' {$start = (($end).AddDays(-1));} #if day is called, sets $start to 1 day prior to $end
+    'week' {$start = (($end).AddDays(-7));} #if day is called, sets $start to 1 week prior to $end
+}
+
+#ifcondition to initialize list of pre-excluded event IDs
+if($excludeCommonIDs){
+    [int[]]$excludeID = 7036, 16384, 16394;
+}
+
+#If Logic to build what conditions may exist
+$filterParams = @{}
+
+if ($message) {
+    $filterParams['message'] = $message
+}
+
+if ($excludeCommonIDs) {
+    $filterParams['excludeID'] = $excludeID
+}
+
+if ($excludeInformation) {
+    $filterParams['ExcludeLevel'] = "Information"
+}
+
+# Build filter if at least one condition exists
+if ($filterParams.Count -gt 0) {
+    $filter = New-EventFilter @filterParams
 }
 
 #checks if any restrictive search attributes exits and creates a custom filter before running the search query
-if ($message -or $excludeCommonIDs){
-    
-    #If Logic to build what conditions may exist
-    $filterParams = @{}
-
-    if ($message) {
-        $filterParams['message'] = $message
-    }
-
-    if ($excludeCommonIDs) {
-        $filterParams['excludeID'] = $excludeID
-    }
-
-    if ($excludeInformation) {
-        $filterParams['ExcludeLevel'] = "Information"
-    }
-
-    # Build filter if at least one condition exists
-    if ($filterParams.Count -gt 0) {
-        $filter = New-EventFilter @filterParams
-    }
-
+if ($filter){  
     $events = Get-WinEvent -FilterHashtable @{ 
         LogName =  'Application', 'HardwareEvents', 'System'
         StartTime =  $start 
