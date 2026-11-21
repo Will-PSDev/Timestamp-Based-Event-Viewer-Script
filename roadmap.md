@@ -10,11 +10,11 @@
 - [X] script rewrite
 
 ## Short-Term
-- [ ] Better structuring to reduce unnecessary functions from being read by the system when not needed
+- [ ] ~~Better structuring to reduce unnecessary functions from being read by the system when not needed~~
 - [X] Output logs to file (Completed 10/26/26)
 - [ ] Sort by newest to oldest
 - [X] Exclude Informational logs (Completed 11/14/26)
-- [ ] Extra time parameters such as -week, -halfday, -6hours
+- [X] Extra time parameters such as -week, -halfday, -6hours (Completed on 11/21/26)
 - [ ] Functionality to output to terminal and log file
 - [ ] Functionality to detect if log file already exists and to prompt to appened or overwrite
 - [X] Logic Rewrite to better handle multiple filter parameters
@@ -34,3 +34,5 @@
 ## Under-Consideration
 - [ ] Prefab log file paths
 - [ ] Logic rewrite such that logs are always ran through filter
+- [ ] Extra script to automatically refrence microsoft documentation for each log
+-- NOTE: Intended for background usage such as a highly filtered run of the script pulling logs for the entire week
